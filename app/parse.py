@@ -64,7 +64,11 @@ def write_to_csv(products: list[Quote]) -> None:
     with open("result.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(PRODUCT_FIELDS)
-        writer.writerows([astuple(product) for product in products if product.author])
+        writer.writerows(
+            [
+                astuple(product) for product in products if product.author
+            ]
+        )
 
 
 def main(output_csv_path: str) -> None:
