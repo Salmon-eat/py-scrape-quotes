@@ -26,18 +26,18 @@ def fetch_page(page_url: str) -> bytes | None:
         return response.content
 
 
-def page_generator() -> Generator[BeautifulSoup, None, None]:
-    page_number = 0
-    while True:
-        page_number += 1
-        page_url = urljoin(BASE_URL, f"page/{page_number}/")
-        content = fetch_page(page_url)
-        if not content:
-            break
-        soup = BeautifulSoup(content, "html.parser")
-        if not soup.select(".quote"):
-            break
+def page_generator():
+    next_url = BASE_URL
+    while next_url:
+        response = requests.get(next_url, timeout=5)
+        soup = BeautifulSoup(response.content, "html.parser")
         yield soup
+
+        next_btn = soup.select_one("li.next > a")
+        if next_btn:
+            next_url = urljoin(BASE_URL, next_btn["href"])
+        else:
+            break
 
 
 def parse_single_page(product: Tag) -> Quote:
@@ -60,8 +60,8 @@ def get_product() -> list[Quote]:
     return products
 
 
-def write_to_csv(products: list[Quote]) -> None:
-    with open("result.csv", "w", newline="", encoding="utf-8") as f:
+def write_to_csv(products: list[Quote], output_csv_path: str) -> None:
+    with open(output_csv_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(PRODUCT_FIELDS)
         writer.writerows(
@@ -73,7 +73,7 @@ def write_to_csv(products: list[Quote]) -> None:
 
 def main(output_csv_path: str) -> None:
     products = get_product()
-    write_to_csv(products)
+    write_to_csv(products, output_csv_path)
 
 
 if __name__ == "__main__":
