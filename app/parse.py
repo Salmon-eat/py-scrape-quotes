@@ -26,7 +26,7 @@ def fetch_page(page_url: str) -> bytes | None:
         return response.content
 
 
-def page_generator():
+def page_generator() -> Generator[BeautifulSoup, None, None]:
     next_url = BASE_URL
     while next_url:
         response = requests.get(next_url, timeout=5)
